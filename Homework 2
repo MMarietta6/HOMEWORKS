@@ -1,0 +1,121 @@
+// Library
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+
+// Definitions
+#define MAX_ARRAY_SIZE 15
+#define OUTPUT_FILENAME "F.txt"
+
+// Prototypes
+double calculateTerm(double x, int n);
+int generateArray(double x, double epsilon, double a[], int index);
+double calculateElapsedTime(clock_t start, clock_t end);
+void printArray(double a[], int length);
+void printElapsedTime(double elapsed_time);
+void printArrayToFile(double a[], int length);
+
+// Main
+int main() {
+    // Variable declarations
+    double x, epsilon;
+    double a[MAX_ARRAY_SIZE];
+    int length;
+    clock_t start_time, end_time;
+    double elapsed_time;
+
+    // Calls to functions
+    printf("Sisesta X (|X| < 1): ");
+    scanf("%lf", &x);
+    if (fabs(x) >= 1) {
+        printf("Viga: |X| peab olema väiksem kui 1.\n");
+        return 1;
+    }
+
+    printf("Sisesta epsilon (0 < epsilon < 1): ");
+    scanf("%lf", &epsilon);
+    if (epsilon <= 0 || epsilon >= 1) {
+        printf("Viga: epsilon peab olema vahemikus (0, 1).\n");
+        return 1;
+    }
+
+    start_time = clock();
+    length = generateArray(x, epsilon, a, 0);
+    end_time = clock();
+    elapsed_time = calculateElapsedTime(start_time, end_time);
+
+    printArray(a, length);
+    printElapsedTime(elapsed_time);
+    printArrayToFile(a, length);
+
+    return 0;
+}
+
+// Functions
+double calculateTerm(double x, int n) {
+    if (n == 0) {
+        return 1.0;
+    } else {
+        double numerator = 1.0;
+        for (int i = 0; i < 2 * n; i++) {
+            numerator *= x;
+        }
+        double denominator = 1.0;
+        for (int i = 1; i <= 2 * n; i++) {
+            denominator *= i;
+        }
+        if (n % 2 == 0) {
+            return numerator / denominator;
+        } else {
+            return -numerator / denominator;
+        }
+    }
+}
+
+int generateArray(double x, double epsilon, double a[], int index) {
+    if (index == 0) {
+        a[0] = 1.0;
+        return generateArray(x, epsilon, a, index + 1);
+    } else if (index >= MAX_ARRAY_SIZE) {
+        return index;
+    } else {
+        a[index] = calculateTerm(x, index);
+        if (fabs(a[index] - a[index - 1]) <= epsilon) {
+            return index + 1;
+        } else {
+            return generateArray(x, epsilon, a, index + 1);
+        }
+    }
+}
+
+double calculateElapsedTime(clock_t start, clock_t end) {
+    return (double)(end - start) / CLOCKS_PER_SEC;
+}
+
+void printArray(double a[], int length) {
+    printf("Massiivi elementide arv: %d\n", length);
+    for (int i = 0; i < length; i++) {
+        printf("A[%d] = %lf\n", i, a[i]);
+    }
+}
+
+void printElapsedTime(double elapsed_time) {
+    printf("Töö teostamiseks kulus %lf sekundit.\n", elapsed_time);
+}
+
+void printArrayToFile(double a[], int length) {
+    FILE *file = fopen(OUTPUT_FILENAME, "w");
+    if (file == NULL) {
+        printf("Viga: faili avamine ebaõnnestus.\n");
+        return;
+    }
+
+    fprintf(file, "Massiivi elementide arv: %d\n", length);
+    for (int i = 0; i < length; i++) {
+        fprintf(file, "A[%d] = %lf\n", i, a[i]);
+    }
+
+    fclose(file);
+    printf("Massiiv on kirjutatud faili %s\n", OUTPUT_FILENAME);
+}
