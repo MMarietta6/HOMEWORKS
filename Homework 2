@@ -12,42 +12,29 @@
 double calculateTerm(double x, int n);
 int generateArray(double x, double epsilon, double a[], int index);
 double calculateElapsedTime(clock_t start, clock_t end);
-void printArray(double a[], int length);
+void printArray(const double a[], int length);
 void printElapsedTime(double elapsed_time);
-void printArrayToFile(double a[], int length);
+void printArrayToFile(const double a[], int length);
+int processData(double x, double epsilon, double result_array[], int max_length);
 
 // Main
 int main() {
     // Variable declarations
-    double x, epsilon;
-    double a[MAX_ARRAY_SIZE];
-    int length;
+    double x_value = 0.5; // Example value for x
+    double epsilon_value = 0.001; // Example value for epsilon
+    double generated_array[MAX_ARRAY_SIZE];
+    int array_length;
     clock_t start_time, end_time;
     double elapsed_time;
 
-    // Calls to functions
-    printf("Sisesta X (|X| < 1): ");
-    scanf("%lf", &x);
-    if (fabs(x) >= 1) {
-        printf("Viga: |X| peab olema väiksem kui 1.\n");
-        return 1;
-    }
-
-    printf("Sisesta epsilon (0 < epsilon < 1): ");
-    scanf("%lf", &epsilon);
-    if (epsilon <= 0 || epsilon >= 1) {
-        printf("Viga: epsilon peab olema vahemikus (0, 1).\n");
-        return 1;
-    }
-
     start_time = clock();
-    length = generateArray(x, epsilon, a, 0);
+    array_length = processData(x_value, epsilon_value, generated_array, MAX_ARRAY_SIZE);
     end_time = clock();
     elapsed_time = calculateElapsedTime(start_time, end_time);
 
-    printArray(a, length);
+    printArray(generated_array, array_length);
     printElapsedTime(elapsed_time);
-    printArrayToFile(a, length);
+    printArrayToFile(generated_array, array_length);
 
     return 0;
 }
@@ -93,7 +80,7 @@ double calculateElapsedTime(clock_t start, clock_t end) {
     return (double)(end - start) / CLOCKS_PER_SEC;
 }
 
-void printArray(double a[], int length) {
+void printArray(const double a[], int length) {
     printf("Massiivi elementide arv: %d\n", length);
     for (int i = 0; i < length; i++) {
         printf("A[%d] = %lf\n", i, a[i]);
@@ -104,7 +91,7 @@ void printElapsedTime(double elapsed_time) {
     printf("Töö teostamiseks kulus %lf sekundit.\n", elapsed_time);
 }
 
-void printArrayToFile(double a[], int length) {
+void printArrayToFile(const double a[], int length) {
     FILE *file = fopen(OUTPUT_FILENAME, "w");
     if (file == NULL) {
         printf("Viga: faili avamine ebaõnnestus.\n");
@@ -118,4 +105,18 @@ void printArrayToFile(double a[], int length) {
 
     fclose(file);
     printf("Massiiv on kirjutatud faili %s\n", OUTPUT_FILENAME);
+}
+
+int processData(double x, double epsilon, double result_array[], int max_length) {
+    if (fabs(x) >= 1) {
+        printf("Viga: |X| peab olema väiksem kui 1.\n");
+        return -1; // Indicate an error
+    }
+
+    if (epsilon <= 0 || epsilon >= 1) {
+        printf("Viga: epsilon peab olema vahemikus (0, 1).\n");
+        return -1; // Indicate an error
+    }
+
+    return generateArray(x, epsilon, result_array, 0);
 }
