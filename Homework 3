@@ -4,9 +4,9 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
-#include <limits> // Required for numeric_limits
+#include <limits> 
 
-// Definitions
+
 const int MAX_ARRAY_SIZE = 15;
 const std::string OUTPUT_FILENAME = "F.txt";
 
