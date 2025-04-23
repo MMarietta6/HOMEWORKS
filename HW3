@@ -1,0 +1,169 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <sstream>
+
+const int MAX_GRADES = 10;
+
+class Student {
+private:
+    std::string name;
+    std::string studentCode;
+    std::vector<int> grades;
+    int scholarship;
+
+public:
+    // Constructor
+    Student(const std::string& name = "", const std::string& studentCode = "");
+
+    // Method to add a grade
+    void addGrade(int grade);
+
+    // Method to calculate the scholarship based on grades
+    void calculateScholarship();
+
+    // Getter methods for accessing private data
+    const std::string& getName() const;
+    const std::string& getStudentCode() const;
+    int getScholarship() const;
+
+    // Overloaded input stream operator for reading student data
+    friend std::istream& operator>>(std::istream& in, Student& student);
+
+    // Overloaded output stream operator for writing student data
+    friend std::ostream& operator<<(std::ostream& out, const Student& student);
+};
+
+// Prototype for the comparison function
+bool compareStudents(const Student& s1, const Student& s2);
+
+int main() {
+    std::vector<Student> students;
+    std::ifstream inputFile("F1.txt");
+
+    if (!inputFile.is_open()) {
+        std::cerr << "Error opening file F1.txt" << std::endl;
+        std::ofstream errorFile("error.txt");
+        if (errorFile.is_open()) {
+            errorFile << "Error opening file F1.txt" << std::endl;
+            errorFile.close();
+        }
+        return 1;
+    }
+
+    Student student;
+    while (inputFile >> student) {
+        students.push_back(student);
+    }
+    inputFile.close();
+
+    std::sort(students.begin(), students.end(), compareStudents);
+
+    std::ofstream outputFile("scholarship.txt");
+    if (!outputFile.is_open()) {
+        std::cerr << "Error opening file scholarship.txt" << std::endl;
+        std::ofstream errorFile("error.txt");
+        if (errorFile.is_open()) {
+            errorFile << "Error opening file scholarship.txt" << std::endl;
+            errorFile.close();
+        }
+        return 1;
+    }
+
+    int scholarshipCount = 0;
+    for (const auto& s : students) {
+        outputFile << s << std::endl;
+        if (s.getScholarship() > 0) {
+            scholarshipCount++;
+        }
+    }
+    outputFile.close();
+
+    std::cout << scholarshipCount << " students received a scholarship." << std::endl;
+
+    return 0;
+}
+
+// Implementation of Student class member functions
+
+Student::Student(const std::string& name, const std::string& studentCode)
+    : name(name), studentCode(studentCode), scholarship(0) {}
+
+void Student::addGrade(int grade) {
+    if (grades.size() < MAX_GRADES) {
+        grades.push_back(grade);
+    }
+}
+
+void Student::calculateScholarship() {
+    bool allFive = true;
+    bool onlyFourOrFive = true;
+    if (grades.empty()) {
+        scholarship = 0;
+        return;
+    }
+    for (int grade : grades) {
+        if (grade != 5) {
+            allFive = false;
+        }
+        if (grade < 4) {
+            onlyFourOrFive = false;
+            break;
+        }
+    }
+
+    if (allFive) {
+        scholarship = 100;
+    } else if (onlyFourOrFive) {
+        scholarship = 75;
+    } else {
+        scholarship = 0;
+    }
+}
+
+const std::string& Student::getName() const {
+    return name;
+}
+
+const std::string& Student::getStudentCode() const {
+    return studentCode;
+}
+
+int Student::getScholarship() const {
+    return scholarship;
+}
+
+std::istream& operator>>(std::istream& in, Student& student) {
+    student.grades.clear();
+    std::string line;
+    if (std::getline(in, line)) {
+        std::stringstream ss(line);
+        ss >> student.name >> student.studentCode;
+        int grade;
+        while (ss >> grade && student.grades.size() < MAX_GRADES) {
+            student.grades.push_back(grade);
+        }
+        student.calculateScholarship();
+    }
+    return in;
+}
+
+std::ostream& operator<<(std::ostream& out, const Student& student) {
+    out << student.name << " " << student.studentCode << " ";
+    if (student.scholarship > 0) {
+        out << "Scholarship: " << student.scholarship;
+    } else {
+        out << "No scholarship";
+    }
+    return out;
+}
+
+// Implementation of the comparison function
+bool compareStudents(const Student& s1, const Student& s2) {
+    if (s1.getScholarship() != s2.getScholarship()) {
+        return s1.getScholarship() > s2.getScholarship(); // Descending order of scholarship
+    }
+    return s1.getName() < s2.getName(); // Alphabetical order by name
+}
