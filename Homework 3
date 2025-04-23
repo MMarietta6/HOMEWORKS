@@ -4,7 +4,7 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
-#include <limits> 
+#include <limits>
 
 
 const int MAX_ARRAY_SIZE = 15;
